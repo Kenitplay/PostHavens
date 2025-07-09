@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || site_setting("site_title", "PostHaven") %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <%= stylesheet_link_tag :application, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+
+    <% logo_setting = SiteSetting.find_by(name: "site_logo") %>
+    <% if logo_setting&.file&.attached? %>
+      <% logo_url = url_for(logo_setting.file) + "?v=#{logo_setting.file.blob.created_at.to_i}" %>
+    <% else %>
+      <% logo_url = image_path("icon2.png") %>
+    <% end %>
+
+    <!-- Favicon and mobile icon using image_tag -->
+    <%= favicon_link_tag logo_url, type: "image/png" %>
+    <%= favicon_link_tag logo_url, rel: "apple-touch-icon", type: "image/png" %>
+  </head>
+
+  <body class="bg-gray-50 text-gray-800 font-sans">
+    <nav class="bg-white shadow-md border-b border-gray-200">
+      <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+        <!-- Logo / Brand -->
+        <div class="flex items-center space-x-2">
+          <%= image_tag logo_url, alt: "Logo", class: "h-8 w-8" %>
+          <span class="text-xl font-bold text-blue-700 tracking-wide">
+            <%= site_setting("site_title", "PostHaven") %>
+          </span>
+
+          <% if admin_signed_in? %>
+            <%= link_to "✎", edit_site_settings_path,
+                class: "ml-2 text-xs text-blue-500 hover:text-blue-700 underline",
+                title: "Edit Site Settings" %>
+          <% end %>
+        </div>
+
+        <div class="flex items-center space-x-6 text-sm">
+          <% if admin_signed_in? %>
+            <%= link_to "Dashboard", posts_path,
+                class: "text-gray-700 hover:text-blue-600 transition-colors font-medium" %>
+
+            <%= button_to "Logout", destroy_admin_session_path,
+                method: :delete,
+                class: "text-red-600 hover:text-red-800 transition-colors font-medium bg-transparent border-0 p-0",
+                form: { class: "inline" } %>
+          <% else %>
+            <%= link_to "Login", new_admin_session_path,
+                class: "text-blue-600 hover:text-blue-800 transition-colors font-medium" %>
+          <% end %>
+        </div>
+      </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 mt-6">
+      <%= yield %>
+    </main>
+  </body>
+</html>
